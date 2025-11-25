@@ -42,7 +42,12 @@ class PostService:
     def get_all_posts(self, skip: int = 0, limit: int = 100) -> List[PostResponse]:
         """Get all posts with pagination."""
         posts = self.repository.get_all(skip=skip, limit=limit)
-        return [PostResponse.model_validate(post) for post in posts]
+        responses = []
+        for post in posts:
+            response = PostResponse.model_validate(post)
+            response.comment_count = len(post.comments) if post.comments else 0
+            responses.append(response)
+        return responses
 
     def get_user_posts(self, google_user_id: str, skip: int = 0, limit: int = 100) -> List[PostResponse]:
         """Get all posts by a specific user."""

@@ -6,6 +6,11 @@ function Login() {
     window.location.href = 'http://localhost:8000/api/auth/login';
   };
 
+  const handleMockUserLogin = (userNum) => {
+    // Redirect to backend with mock user parameter
+    window.location.href = `http://localhost:8000/api/auth/login?mock_user=${userNum}`;
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -22,6 +27,17 @@ function Login() {
             <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
           </svg>
           Continue with Google
+        </button>
+
+        <button
+          onClick={() => handleMockUserLogin(2)}
+          className="mock-user-button"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" fill="#0D8ABC"/>
+            <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="#0D8ABC" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Continue as Alice Smith
         </button>
       </div>
     </div>

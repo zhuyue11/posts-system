@@ -34,17 +34,28 @@ def create_access_token(data: dict) -> str:
 
 
 @router.get("/login")
-async def login(request: Request, db: Session = Depends(get_db)):
+async def login(request: Request, db: Session = Depends(get_db), mock_user: int = 1):
     """Initiate Google OAuth login flow or use mock user in dev mode."""
     # If in development mode, bypass Google OAuth and use mock user
     if settings.DEV_MODE:
-        # Create mock user data
-        mock_user_data = {
-            "google_user_id": "dev-user-12345",
-            "email": "dev@example.com",
-            "name": "Dev User",
-            "picture": "https://ui-avatars.com/api/?name=Dev+User&background=random"
+        # Define available mock users
+        mock_users = {
+            1: {
+                "google_user_id": "dev-user-12345",
+                "email": "dev@example.com",
+                "name": "Dev User",
+                "picture": "https://ui-avatars.com/api/?name=Dev+User&background=random"
+            },
+            2: {
+                "google_user_id": "dev-user-67890",
+                "email": "alice@example.com",
+                "name": "Alice Smith",
+                "picture": "https://ui-avatars.com/api/?name=Alice+Smith&background=0D8ABC"
+            }
         }
+
+        # Get the selected mock user (default to user 1)
+        mock_user_data = mock_users.get(mock_user, mock_users[1])
 
         # Get or create mock user in database
         user_repo = UserRepository(db)

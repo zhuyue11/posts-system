@@ -27,5 +27,6 @@ class PostResponse(PostBase):
     author_name: str
     created_at: datetime
     updated_at: datetime
+    comment_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)

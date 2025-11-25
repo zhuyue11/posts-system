@@ -126,7 +126,7 @@ function Main() {
         // Update post comment count
         setPosts(posts.map(p =>
           p.id === postId
-            ? { ...p, comments: [...(p.comments || []), {}] }
+            ? { ...p, comment_count: (p.comment_count || 0) + 1 }
             : p
         ));
       }
@@ -205,7 +205,7 @@ function Main() {
                       className="comments-toggle"
                       onClick={() => toggleComments(post.id)}
                     >
-                      {expandedPostId === post.id ? '▼' : '▶'} {post.comments?.length || 0} comments
+                      {expandedPostId === post.id ? '▼' : '▶'} {post.comment_count || 0} comments
                     </button>
                   </div>
 
