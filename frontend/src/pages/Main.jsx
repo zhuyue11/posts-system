@@ -8,6 +8,10 @@ function Main() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState({ subject: '', content: '' });
   const [loading, setLoading] = useState(false);
+  const [expandedPostId, setExpandedPostId] = useState(null);
+  const [comments, setComments] = useState({});
+  const [newComment, setNewComment] = useState({});
+  const [commentLoading, setCommentLoading] = useState({});
 
   useEffect(() => {
     // Check if user is logged in
@@ -41,7 +45,11 @@ function Main() {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/posts', {
+      const url = new URL('http://localhost:8000/api/posts');
+      url.searchParams.append('google_user_id', user.userId);
+      url.searchParams.append('author_name', user.name);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,8 +57,6 @@ function Main() {
         body: JSON.stringify({
           subject: newPost.subject,
           content: newPost.content,
-          google_user_id: user.userId,
-          author_name: user.name,
         }),
       });
 
@@ -69,6 +75,66 @@ function Main() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');
+  };
+
+  const toggleComments = async (postId) => {
+    if (expandedPostId === postId) {
+      setExpandedPostId(null);
+    } else {
+      setExpandedPostId(postId);
+      if (!comments[postId]) {
+        await fetchComments(postId);
+      }
+    }
+  };
+
+  const fetchComments = async (postId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments`);
+      if (response.ok) {
+        const data = await response.json();
+        setComments(prev => ({ ...prev, [postId]: data }));
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const handleAddComment = async (postId) => {
+    const commentText = newComment[postId]?.trim();
+    if (!commentText) return;
+
+    setCommentLoading(prev => ({ ...prev, [postId]: true }));
+    try {
+      const url = new URL(`http://localhost:8000/api/posts/${postId}/comments`);
+      url.searchParams.append('google_user_id', user.userId);
+      url.searchParams.append('author_name', user.name);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: commentText,
+        }),
+      });
+
+      if (response.ok) {
+        setNewComment(prev => ({ ...prev, [postId]: '' }));
+        await fetchComments(postId);
+        // Update post comment count
+        setPosts(posts.map(p =>
+          p.id === postId
+            ? { ...p, comments: [...(p.comments || []), {}] }
+            : p
+        ));
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    } finally {
+      setCommentLoading(prev => ({ ...prev, [postId]: false }));
+    }
   };
 
   if (!user) {
@@ -135,10 +201,59 @@ function Main() {
                   <h3 className="post-subject">{post.subject}</h3>
                   <p className="post-content">{post.content}</p>
                   <div className="post-footer">
-                    <span className="comments-count">
-                      {post.comments?.length || 0} comments
-                    </span>
+                    <button
+                      className="comments-toggle"
+                      onClick={() => toggleComments(post.id)}
+                    >
+                      {expandedPostId === post.id ? '▼' : '▶'} {post.comments?.length || 0} comments
+                    </button>
                   </div>
+
+                  {expandedPostId === post.id && (
+                    <div className="comments-section">
+                      <div className="comments-list">
+                        {comments[post.id]?.length > 0 ? (
+                          comments[post.id].map((comment) => (
+                            <div key={comment.id} className="comment">
+                              <div className="comment-header">
+                                <strong>{comment.author_name}</strong>
+                                <span className="comment-date">
+                                  {new Date(comment.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="comment-content">{comment.content}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="no-comments">No comments yet. Be the first to comment!</p>
+                        )}
+                      </div>
+
+                      <div className="add-comment">
+                        <textarea
+                          placeholder="Write a comment..."
+                          value={newComment[post.id] || ''}
+                          onChange={(e) =>
+                            setNewComment({ ...newComment, [post.id]: e.target.value })
+                          }
+                          className="comment-textarea"
+                          maxLength="280"
+                        />
+                        <div className="comment-form-footer">
+                          <span className="char-count">
+                            {(newComment[post.id] || '').length}/280
+                          </span>
+                          <button
+                            onClick={() => handleAddComment(post.id)}
+                            disabled={!newComment[post.id]?.trim() || commentLoading[post.id]}
+                            className="comment-button"
+                          >
+                            {commentLoading[post.id] ? 'Adding...' : 'Add Comment'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}

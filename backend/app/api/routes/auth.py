@@ -34,8 +34,43 @@ def create_access_token(data: dict) -> str:
 
 
 @router.get("/login")
-async def login(request: Request):
-    """Initiate Google OAuth login flow."""
+async def login(request: Request, db: Session = Depends(get_db)):
+    """Initiate Google OAuth login flow or use mock user in dev mode."""
+    # If in development mode, bypass Google OAuth and use mock user
+    if settings.DEV_MODE:
+        # Create mock user data
+        mock_user_data = {
+            "google_user_id": "dev-user-12345",
+            "email": "dev@example.com",
+            "name": "Dev User",
+            "picture": "https://ui-avatars.com/api/?name=Dev+User&background=random"
+        }
+
+        # Get or create mock user in database
+        user_repo = UserRepository(db)
+        user = user_repo.get_or_create(
+            google_user_id=mock_user_data["google_user_id"],
+            email=mock_user_data["email"],
+            name=mock_user_data["name"],
+            picture=mock_user_data["picture"]
+        )
+
+        # Create access token
+        access_token = create_access_token(
+            data={
+                "sub": user.google_user_id,
+                "email": user.email,
+                "name": user.name
+            }
+        )
+
+        # Redirect to frontend with token
+        frontend_url = "http://localhost:5173"
+        return RedirectResponse(
+            url=f"{frontend_url}/auth/callback?token={access_token}&user_id={user.google_user_id}&name={user.name}&email={user.email}&picture={user.picture or ''}"
+        )
+
+    # Production mode: use Google OAuth
     redirect_uri = settings.GOOGLE_REDIRECT_URI
     return await oauth.google.authorize_redirect(request, redirect_uri)
 

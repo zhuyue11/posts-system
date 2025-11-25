@@ -6,7 +6,7 @@ from app.schemas.comment import CommentCreate, CommentUpdate, CommentResponse
 from app.exceptions import NotFoundError, ForbiddenError
 
 
-# Mock authentication constants (replace with real auth later)
+# Default mock user constants for backward compatibility
 MOCK_USER_ID = "1"
 MOCK_USER_NAME = "Test User"
 
@@ -18,12 +18,12 @@ class CommentService:
         self.comment_repo = CommentRepository(db)
         self.post_repo = PostRepository(db)
 
-    def create_comment(self, post_id: int, comment_data: CommentCreate) -> CommentResponse:
+    def create_comment(self, post_id: int, comment_data: CommentCreate, google_user_id: str = MOCK_USER_ID, author_name: str = MOCK_USER_NAME) -> CommentResponse:
         """
         Create a new comment on a post.
         Business Logic:
         - Validates post exists
-        - Uses mock authentication data
+        - Uses authentication data from request
         """
         # Validate post exists
         post = self.post_repo.get_by_id(post_id)
@@ -33,8 +33,8 @@ class CommentService:
         comment = self.comment_repo.create(
             post_id=post_id,
             content=comment_data.content,
-            google_user_id=MOCK_USER_ID,
-            author_name=MOCK_USER_NAME
+            google_user_id=google_user_id,
+            author_name=author_name
         )
         return CommentResponse.model_validate(comment)
 

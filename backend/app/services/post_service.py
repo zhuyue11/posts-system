@@ -5,7 +5,7 @@ from app.schemas.post import PostCreate, PostUpdate, PostResponse
 from app.exceptions import NotFoundError, ForbiddenError
 
 
-# Mock authentication constants (replace with real auth later)
+# Default mock user constants for backward compatibility
 MOCK_USER_ID = "1"
 MOCK_USER_NAME = "Test User"
 
@@ -16,16 +16,16 @@ class PostService:
     def __init__(self, db: Session):
         self.repository = PostRepository(db)
 
-    def create_post(self, post_data: PostCreate) -> PostResponse:
+    def create_post(self, post_data: PostCreate, google_user_id: str = MOCK_USER_ID, author_name: str = MOCK_USER_NAME) -> PostResponse:
         """
         Create a new post.
-        Business Logic: Uses mock authentication data.
+        Business Logic: Uses authentication data from request.
         """
         post = self.repository.create(
             subject=post_data.subject,
             content=post_data.content,
-            google_user_id=MOCK_USER_ID,
-            author_name=MOCK_USER_NAME
+            google_user_id=google_user_id,
+            author_name=author_name
         )
         return PostResponse.model_validate(post)
 

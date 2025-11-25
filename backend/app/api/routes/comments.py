@@ -13,6 +13,8 @@ router = APIRouter()
 def create_comment(
     post_id: int,
     comment_data: CommentCreate,
+    google_user_id: str = Query(..., description="Google user ID of the comment author"),
+    author_name: str = Query(..., description="Name of the comment author"),
     db: Session = Depends(get_db)
 ):
     """
@@ -20,9 +22,11 @@ def create_comment(
 
     - **post_id**: Post ID to comment on
     - **content**: Comment content (required)
+    - **google_user_id**: Google user ID of the comment author (required)
+    - **author_name**: Name of the comment author (required)
     """
     service = CommentService(db)
-    return service.create_comment(post_id, comment_data)
+    return service.create_comment(post_id, comment_data, google_user_id=google_user_id, author_name=author_name)
 
 
 @router.get("/posts/{post_id}/comments", response_model=List[CommentResponse])

@@ -12,6 +12,8 @@ router = APIRouter()
 @router.post("", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 def create_post(
     post_data: PostCreate,
+    google_user_id: str = Query(..., description="Google user ID of the post author"),
+    author_name: str = Query(..., description="Name of the post author"),
     db: Session = Depends(get_db)
 ):
     """
@@ -19,9 +21,11 @@ def create_post(
 
     - **subject**: Post title/subject (required)
     - **content**: Post content (required)
+    - **google_user_id**: Google user ID of the post author (required)
+    - **author_name**: Name of the post author (required)
     """
     service = PostService(db)
-    return service.create_post(post_data)
+    return service.create_post(post_data, google_user_id=google_user_id, author_name=author_name)
 
 
 @router.get("", response_model=List[PostResponse])
