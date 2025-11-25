@@ -1,7 +1,5 @@
 from typing import List
-from sqlalchemy.orm import Session
-from app.repositories.comment_repository import CommentRepository
-from app.repositories.post_repository import PostRepository
+from app.repositories import get_comment_repository, get_post_repository
 from app.schemas.comment import CommentCreate, CommentUpdate, CommentResponse
 from app.exceptions import NotFoundError, ForbiddenError
 
@@ -14,9 +12,9 @@ MOCK_USER_NAME = "Test User"
 class CommentService:
     """Service layer for comment business logic."""
 
-    def __init__(self, db: Session):
-        self.comment_repo = CommentRepository(db)
-        self.post_repo = PostRepository(db)
+    def __init__(self, db):
+        self.comment_repo = get_comment_repository(db)
+        self.post_repo = get_post_repository(db)
 
     def create_comment(self, post_id: int, comment_data: CommentCreate, google_user_id: str = MOCK_USER_ID, author_name: str = MOCK_USER_NAME) -> CommentResponse:
         """

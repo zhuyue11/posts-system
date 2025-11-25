@@ -1,0 +1,49 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:$COMMIT_SHA'
+      - '-t'
+      - 'europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:latest'
+      - '.'
+    dir: 'backend'
+
+  # Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:$COMMIT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:latest'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'posts-backend'
+      - '--image=europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:$COMMIT_SHA'
+      - '--region=europe-west4'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=DB_TYPE=firestore,GCP_PROJECT_ID=${PROJECT_ID},DEV_MODE=true,FRONTEND_URL=https://${PROJECT_ID}.web.app,ALGORITHM=HS256,ACCESS_TOKEN_EXPIRE_MINUTES=30,SECRET_KEY=temp-secret-key-replace-in-production,GOOGLE_CLIENT_ID=placeholder,GOOGLE_CLIENT_SECRET=placeholder,ALLOWED_ORIGINS=["https://${PROJECT_ID}.web.app","https://${PROJECT_ID}.firebaseapp.com"]'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--timeout=300'
+      - '--concurrency=80'
+
+images:
+  - 'europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:$COMMIT_SHA'
+  - 'europe-west4-docker.pkg.dev/${PROJECT_ID}/cloud-run/posts-backend:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'N1_HIGHCPU_8'

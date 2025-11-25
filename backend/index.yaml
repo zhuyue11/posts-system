@@ -1,0 +1,20 @@
+indexes:
+  # Index for getting comments by post_id ordered by created_at ascending
+  - kind: Comment
+    properties:
+      - name: post_id
+      - name: created_at
+
+  # Index for getting comments by user ordered by created_at descending
+  - kind: Comment
+    properties:
+      - name: google_user_id
+      - name: created_at
+        direction: desc
+
+  # Index for getting posts by user ordered by created_at descending
+  - kind: Post
+    properties:
+      - name: google_user_id
+      - name: created_at
+        direction: desc

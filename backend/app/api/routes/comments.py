@@ -1,6 +1,5 @@
-from typing import List
+from typing import List, Union
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services.comment_service import CommentService
@@ -12,11 +11,11 @@ router = APIRouter()
 
 @router.post("/posts/{post_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
 def create_comment(
-    post_id: int,
+    post_id: Union[int, str],
     comment_data: CommentCreate,
     google_user_id: str = Query(..., description="Google user ID of the comment author"),
     author_name: str = Query(..., description="Name of the comment author"),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Add a comment to a post.
@@ -32,10 +31,10 @@ def create_comment(
 
 @router.get("/posts/{post_id}/comments", response_model=List[CommentResponse])
 def get_post_comments(
-    post_id: int,
+    post_id: Union[int, str],
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(100, ge=1, le=100, description="Number of records to return"),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Get all comments for a specific post.
@@ -50,8 +49,8 @@ def get_post_comments(
 
 @router.get("/comments/{comment_id}", response_model=CommentResponse)
 def get_comment(
-    comment_id: int,
-    db: Session = Depends(get_db)
+    comment_id: Union[int, str],
+    db = Depends(get_db)
 ):
     """
     Get a specific comment by ID.
@@ -67,7 +66,7 @@ def get_user_comments(
     google_user_id: str,
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(100, ge=1, le=100, description="Number of records to return"),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Get all comments by a specific user.
@@ -82,10 +81,10 @@ def get_user_comments(
 
 @router.put("/comments/{comment_id}", response_model=CommentResponse)
 def update_comment(
-    comment_id: int,
+    comment_id: Union[int, str],
     comment_data: CommentUpdate,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Update a comment. Only the owner can update.
@@ -99,9 +98,9 @@ def update_comment(
 
 @router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_comment(
-    comment_id: int,
+    comment_id: Union[int, str],
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Delete a comment. Only the owner can delete.

@@ -55,6 +55,10 @@ class CommentRepository:
         self.db.refresh(comment)
         return comment
 
+    def count_by_post_id(self, post_id: int) -> int:
+        """Count comments for a specific post."""
+        return self.db.query(Comment).filter(Comment.post_id == post_id).count()
+
     def delete(self, comment: Comment) -> None:
         """Delete a comment from the database."""
         self.db.delete(comment)

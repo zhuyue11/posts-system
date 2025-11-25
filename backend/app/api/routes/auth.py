@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
 from authlib.integrations.starlette_client import OAuth
 from jose import jwt
 from datetime import datetime, timedelta
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.repositories.user_repository import UserRepository
+from app.repositories import get_user_repository
 
 router = APIRouter()
 
@@ -34,7 +33,7 @@ def create_access_token(data: dict) -> str:
 
 
 @router.get("/login")
-async def login(request: Request, db: Session = Depends(get_db), mock_user: int = 1):
+async def login(request: Request, db = Depends(get_db), mock_user: int = 1):
     """Initiate Google OAuth login flow or use mock user in dev mode."""
     # If in development mode, bypass Google OAuth and use mock user
     if settings.DEV_MODE:
@@ -58,7 +57,7 @@ async def login(request: Request, db: Session = Depends(get_db), mock_user: int 
         mock_user_data = mock_users.get(mock_user, mock_users[1])
 
         # Get or create mock user in database
-        user_repo = UserRepository(db)
+        user_repo = get_user_repository(db)
         user = user_repo.get_or_create(
             google_user_id=mock_user_data["google_user_id"],
             email=mock_user_data["email"],
@@ -76,7 +75,7 @@ async def login(request: Request, db: Session = Depends(get_db), mock_user: int 
         )
 
         # Redirect to frontend with token
-        frontend_url = "http://localhost:5173"
+        frontend_url = settings.FRONTEND_URL
         return RedirectResponse(
             url=f"{frontend_url}/auth/callback?token={access_token}&user_id={user.google_user_id}&name={user.name}&email={user.email}&picture={user.picture or ''}"
         )
@@ -87,7 +86,7 @@ async def login(request: Request, db: Session = Depends(get_db), mock_user: int 
 
 
 @router.get("/callback")
-async def auth_callback(request: Request, db: Session = Depends(get_db)):
+async def auth_callback(request: Request, db = Depends(get_db)):
     """Handle Google OAuth callback."""
     try:
         # Get the token from Google
@@ -108,7 +107,7 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Incomplete user info from Google")
 
         # Get or create user in database
-        user_repo = UserRepository(db)
+        user_repo = get_user_repository(db)
         user = user_repo.get_or_create(
             google_user_id=google_user_id,
             email=email,
@@ -126,7 +125,7 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
         )
 
         # Redirect to frontend with token
-        frontend_url = "http://localhost:5173"
+        frontend_url = settings.FRONTEND_URL
         return RedirectResponse(
             url=f"{frontend_url}/auth/callback?token={access_token}&user_id={user.google_user_id}&name={user.name}&email={user.email}&picture={user.picture or ''}"
         )

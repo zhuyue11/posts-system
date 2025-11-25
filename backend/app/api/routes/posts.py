@@ -1,6 +1,5 @@
-from typing import List
+from typing import List, Union
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services.post_service import PostService
@@ -15,7 +14,7 @@ def create_post(
     post_data: PostCreate,
     google_user_id: str = Query(..., description="Google user ID of the post author"),
     author_name: str = Query(..., description="Name of the post author"),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Create a new post.
@@ -33,7 +32,7 @@ def create_post(
 def get_all_posts(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(100, ge=1, le=100, description="Number of records to return"),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Get all posts with pagination.
@@ -50,7 +49,7 @@ def get_user_posts(
     google_user_id: str,
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(100, ge=1, le=100, description="Number of records to return"),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Get all posts by a specific user.
@@ -65,8 +64,8 @@ def get_user_posts(
 
 @router.get("/{post_id}", response_model=PostResponse)
 def get_post(
-    post_id: int,
-    db: Session = Depends(get_db)
+    post_id: Union[int, str],
+    db = Depends(get_db)
 ):
     """
     Get a specific post by ID.
@@ -79,10 +78,10 @@ def get_post(
 
 @router.put("/{post_id}", response_model=PostResponse)
 def update_post(
-    post_id: int,
+    post_id: Union[int, str],
     post_data: PostUpdate,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Update a post. Only the owner can update.
@@ -99,9 +98,9 @@ def update_post(
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(
-    post_id: int,
+    post_id: Union[int, str],
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """
     Delete a post. Only the owner can delete.

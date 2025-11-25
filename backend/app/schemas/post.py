@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 
 class PostBase(BaseModel):
@@ -22,7 +22,7 @@ class PostUpdate(BaseModel):
 
 class PostResponse(PostBase):
     """Schema for post response (includes all fields from DB)."""
-    id: int
+    id: Union[int, str]  # int for PostgreSQL, str for Firestore
     google_user_id: str
     author_name: str
     created_at: datetime

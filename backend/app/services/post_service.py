@@ -1,6 +1,5 @@
 from typing import List
-from sqlalchemy.orm import Session
-from app.repositories.post_repository import PostRepository
+from app.repositories import get_post_repository, get_comment_repository
 from app.schemas.post import PostCreate, PostUpdate, PostResponse
 from app.exceptions import NotFoundError, ForbiddenError
 
@@ -13,8 +12,9 @@ MOCK_USER_NAME = "Test User"
 class PostService:
     """Service layer for post business logic."""
 
-    def __init__(self, db: Session):
-        self.repository = PostRepository(db)
+    def __init__(self, db):
+        self.repository = get_post_repository(db)
+        self.comment_repository = get_comment_repository(db)
 
     def create_post(self, post_data: PostCreate, google_user_id: str = MOCK_USER_ID, author_name: str = MOCK_USER_NAME) -> PostResponse:
         """
@@ -45,7 +45,8 @@ class PostService:
         responses = []
         for post in posts:
             response = PostResponse.model_validate(post)
-            response.comment_count = len(post.comments) if post.comments else 0
+            # Get comment count using repository (works for both PostgreSQL and Firestore)
+            response.comment_count = self.comment_repository.count_by_post_id(post.id)
             responses.append(response)
         return responses
 

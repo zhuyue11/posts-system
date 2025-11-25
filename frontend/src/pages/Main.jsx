@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Main.css';
+import config from '../config';
 
 function Main() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ function Main() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/posts');
+      const response = await fetch(`${config.apiUrl}/api/posts`);
       if (response.ok) {
         const data = await response.json();
         setPosts(data);
@@ -49,7 +50,7 @@ function Main() {
 
     setLoading(true);
     try {
-      const url = new URL('http://localhost:8000/api/posts');
+      const url = new URL(`${config.apiUrl}/api/posts`);
       url.searchParams.append('google_user_id', user.userId);
       url.searchParams.append('author_name', user.name);
 
@@ -94,7 +95,7 @@ function Main() {
 
   const fetchComments = async (postId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments`);
+      const response = await fetch(`${config.apiUrl}/api/posts/${postId}/comments`);
       if (response.ok) {
         const data = await response.json();
         setComments(prev => ({ ...prev, [postId]: data }));
@@ -110,7 +111,7 @@ function Main() {
 
     setCommentLoading(prev => ({ ...prev, [postId]: true }));
     try {
-      const url = new URL(`http://localhost:8000/api/posts/${postId}/comments`);
+      const url = new URL(`${config.apiUrl}/api/posts/${postId}/comments`);
       url.searchParams.append('google_user_id', user.userId);
       url.searchParams.append('author_name', user.name);
 
@@ -148,7 +149,7 @@ function Main() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
+      const response = await fetch(`${config.apiUrl}/api/posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -173,7 +174,7 @@ function Main() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+      const response = await fetch(`${config.apiUrl}/api/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -209,7 +210,7 @@ function Main() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
+      const response = await fetch(`${config.apiUrl}/api/posts/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +248,7 @@ function Main() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+      const response = await fetch(`${config.apiUrl}/api/comments/${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

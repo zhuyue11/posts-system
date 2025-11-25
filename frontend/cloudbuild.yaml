@@ -1,0 +1,27 @@
+steps:
+  # Install dependencies
+  - name: 'node:20'
+    entrypoint: 'npm'
+    args: ['install']
+    dir: 'frontend'
+
+  # Build the React app with production API URL
+  - name: 'node:20'
+    entrypoint: 'npm'
+    args: ['run', 'build']
+    dir: 'frontend'
+    env:
+      - 'VITE_API_URL=https://posts-backend-448931378243.europe-west4.run.app'
+
+  # Deploy to Firebase Hosting
+  - name: 'gcr.io/${PROJECT_ID}/firebase'
+    args:
+      - 'deploy'
+      - '--only'
+      - 'hosting'
+      - '--project'
+      - '${PROJECT_ID}'
+    dir: 'frontend'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

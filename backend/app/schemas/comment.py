@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 
 class CommentBase(BaseModel):
@@ -20,8 +20,8 @@ class CommentUpdate(BaseModel):
 
 class CommentResponse(CommentBase):
     """Schema for comment response (includes all fields from DB)."""
-    id: int
-    post_id: int
+    id: Union[int, str]  # int for PostgreSQL, str for Firestore
+    post_id: Union[int, str]  # int for PostgreSQL, str for Firestore
     google_user_id: str
     author_name: str
     created_at: datetime

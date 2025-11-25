@@ -1,14 +1,15 @@
 import './Login.css';
+import config from '../config';
 
 function Login() {
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = 'http://localhost:8000/api/auth/login';
+    window.location.href = `${config.apiUrl}/api/auth/login`;
   };
 
   const handleMockUserLogin = (userNum) => {
     // Redirect to backend with mock user parameter
-    window.location.href = `http://localhost:8000/api/auth/login?mock_user=${userNum}`;
+    window.location.href = `${config.apiUrl}/api/auth/login?mock_user=${userNum}`;
   };
 
   return (

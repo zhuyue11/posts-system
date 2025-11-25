@@ -8,7 +8,12 @@ class Settings(BaseSettings):
 
     API_V1_STR: str = "/api/v1"
 
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000", "http://localhost:5173"]
+    # For production, use "*" to allow all origins or specific origins
+    CORS_ALLOW_ALL: bool = False
+
+    # Frontend URL for redirects
+    FRONTEND_URL: str = "http://localhost:5173"
 
     # Database configuration
     # Set DB_TYPE to "postgresql" for local dev, "firestore" for Google Cloud

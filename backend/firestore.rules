@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // All writes go through the backend service account
+    // Frontend only reads data, never writes directly to Firestore
+
+    // Users collection - read-only for authenticated users
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if false;  // Only backend can write
+    }
+
+    // Posts collection - read-only for authenticated users
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow write: if false;  // Only backend can write
+    }
+
+    // Comments collection - read-only for authenticated users
+    match /comments/{commentId} {
+      allow read: if request.auth != null;
+      allow write: if false;  // Only backend can write
+    }
+  }
+}
