@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Google OAuth configuration
+    GOOGLE_CLIENT_ID: str = "your-google-client-id"
+    GOOGLE_CLIENT_SECRET: str = "your-google-client-secret"
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/auth/callback"
+
     # Content length limits (configurable)
     MAX_POST_CONTENT_LENGTH: int = 280
     MAX_COMMENT_CONTENT_LENGTH: int = 280

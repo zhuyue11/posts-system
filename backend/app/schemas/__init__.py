@@ -1,5 +1,6 @@
 from app.schemas.post import PostCreate, PostUpdate, PostResponse
 from app.schemas.comment import CommentCreate, CommentUpdate, CommentResponse
+from app.schemas.user import UserCreate, UserResponse, TokenResponse
 
 __all__ = [
     "PostCreate",
@@ -8,4 +9,7 @@ __all__ = [
     "CommentCreate",
     "CommentUpdate",
     "CommentResponse",
+    "UserCreate",
+    "UserResponse",
+    "TokenResponse",
 ]
