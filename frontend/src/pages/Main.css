@@ -176,6 +176,12 @@
   margin-bottom: 0.75rem;
 }
 
+.post-author-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .post-header strong {
   color: #333;
   font-size: 1rem;
@@ -184,6 +190,23 @@
 .post-date {
   color: #888;
   font-size: 0.875rem;
+}
+
+.delete-button {
+  padding: 0.4rem 0.8rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
 }
 
 .post-subject {
@@ -253,6 +276,12 @@
   margin-bottom: 0.5rem;
 }
 
+.comment-author-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .comment-header strong {
   color: #333;
   font-size: 0.875rem;
@@ -261,6 +290,23 @@
 .comment-date {
   color: #888;
   font-size: 0.75rem;
+}
+
+.delete-comment-button {
+  padding: 0.3rem 0.6rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-comment-button:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
 }
 
 .comment-content {

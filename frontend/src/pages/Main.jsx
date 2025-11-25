@@ -137,6 +137,59 @@ function Main() {
     }
   };
 
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to delete this post? This will also delete all comments.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setPosts(posts.filter(p => p.id !== postId));
+        if (expandedPostId === postId) {
+          setExpandedPostId(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        await fetchComments(postId);
+        // Update post comment count
+        setPosts(posts.map(p =>
+          p.id === postId
+            ? { ...p, comment_count: Math.max((p.comment_count || 0) - 1, 0) }
+            : p
+        ));
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -193,10 +246,21 @@ function Main() {
               posts.map((post) => (
                 <div key={post.id} className="post-card">
                   <div className="post-header">
-                    <strong>{post.author_name}</strong>
-                    <span className="post-date">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="post-author-info">
+                      <strong>{post.author_name}</strong>
+                      <span className="post-date">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {post.google_user_id === user.userId && (
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDeletePost(post.id)}
+                        title="Delete post"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                   <h3 className="post-subject">{post.subject}</h3>
                   <p className="post-content">{post.content}</p>
@@ -216,10 +280,21 @@ function Main() {
                           comments[post.id].map((comment) => (
                             <div key={comment.id} className="comment">
                               <div className="comment-header">
-                                <strong>{comment.author_name}</strong>
-                                <span className="comment-date">
-                                  {new Date(comment.created_at).toLocaleDateString()}
-                                </span>
+                                <div className="comment-author-info">
+                                  <strong>{comment.author_name}</strong>
+                                  <span className="comment-date">
+                                    {new Date(comment.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                {comment.google_user_id === user.userId && (
+                                  <button
+                                    className="delete-comment-button"
+                                    onClick={() => handleDeleteComment(post.id, comment.id)}
+                                    title="Delete comment"
+                                  >
+                                    Delete
+                                  </button>
+                                )}
                               </div>
                               <p className="comment-content">{comment.content}</p>
                             </div>

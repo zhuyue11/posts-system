@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.auth import get_current_user
 from app.services.comment_service import CommentService
 from app.schemas.comment import CommentCreate, CommentUpdate, CommentResponse
 
@@ -98,6 +99,7 @@ def update_comment(
 @router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_comment(
     comment_id: int,
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -106,5 +108,5 @@ def delete_comment(
     - **comment_id**: Comment ID
     """
     service = CommentService(db)
-    service.delete_comment(comment_id)
+    service.delete_comment(comment_id, user_id=current_user["google_user_id"])
     return None

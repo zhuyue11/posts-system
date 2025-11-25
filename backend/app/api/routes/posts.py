@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.auth import get_current_user
 from app.services.post_service import PostService
 from app.schemas.post import PostCreate, PostUpdate, PostResponse
 
@@ -98,6 +99,7 @@ def update_post(
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(
     post_id: int,
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -107,5 +109,5 @@ def delete_post(
     - **post_id**: Post ID
     """
     service = PostService(db)
-    service.delete_post(post_id)
+    service.delete_post(post_id, user_id=current_user["google_user_id"])
     return None
