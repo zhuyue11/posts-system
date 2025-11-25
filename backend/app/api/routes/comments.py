@@ -84,6 +84,7 @@ def get_user_comments(
 def update_comment(
     comment_id: int,
     comment_data: CommentUpdate,
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -93,7 +94,7 @@ def update_comment(
     - **content**: New content (required)
     """
     service = CommentService(db)
-    return service.update_comment(comment_id, comment_data)
+    return service.update_comment(comment_id, comment_data, user_id=current_user["google_user_id"])
 
 
 @router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)

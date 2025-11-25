@@ -81,6 +81,7 @@ def get_post(
 def update_post(
     post_id: int,
     post_data: PostUpdate,
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -93,7 +94,7 @@ def update_post(
     At least one field must be provided.
     """
     service = PostService(db)
-    return service.update_post(post_id, post_data)
+    return service.update_post(post_id, post_data, user_id=current_user["google_user_id"])
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)

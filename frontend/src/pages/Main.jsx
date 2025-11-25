@@ -12,6 +12,10 @@ function Main() {
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [commentLoading, setCommentLoading] = useState({});
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editPostData, setEditPostData] = useState({ subject: '', content: '' });
+  const [editCommentContent, setEditCommentContent] = useState('');
 
   useEffect(() => {
     // Check if user is logged in
@@ -190,6 +194,80 @@ function Main() {
     }
   };
 
+  const startEditPost = (post) => {
+    setEditingPostId(post.id);
+    setEditPostData({ subject: post.subject, content: post.content });
+  };
+
+  const cancelEditPost = () => {
+    setEditingPostId(null);
+    setEditPostData({ subject: '', content: '' });
+  };
+
+  const handleUpdatePost = async (postId) => {
+    if (!editPostData.subject.trim() || !editPostData.content.trim()) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject: editPostData.subject,
+          content: editPostData.content,
+        }),
+      });
+
+      if (response.ok) {
+        const updatedPost = await response.json();
+        setPosts(posts.map(p => p.id === postId ? updatedPost : p));
+        setEditingPostId(null);
+        setEditPostData({ subject: '', content: '' });
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+    }
+  };
+
+  const startEditComment = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditCommentContent(comment.content);
+  };
+
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditCommentContent('');
+  };
+
+  const handleUpdateComment = async (postId, commentId) => {
+    if (!editCommentContent.trim()) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: editCommentContent,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchComments(postId);
+        setEditingCommentId(null);
+        setEditCommentContent('');
+      }
+    } catch (error) {
+      console.error('Error updating comment:', error);
+    }
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -253,17 +331,68 @@ function Main() {
                       </span>
                     </div>
                     {post.google_user_id === user.userId && (
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDeletePost(post.id)}
-                        title="Delete post"
-                      >
-                        Delete
-                      </button>
+                      <div className="post-actions">
+                        {editingPostId === post.id ? (
+                          <>
+                            <button
+                              className="save-button"
+                              onClick={() => handleUpdatePost(post.id)}
+                              title="Save changes"
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="cancel-button"
+                              onClick={cancelEditPost}
+                              title="Cancel editing"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="edit-button"
+                              onClick={() => startEditPost(post)}
+                              title="Edit post"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="delete-button"
+                              onClick={() => handleDeletePost(post.id)}
+                              title="Delete post"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <h3 className="post-subject">{post.subject}</h3>
-                  <p className="post-content">{post.content}</p>
+                  {editingPostId === post.id ? (
+                    <div className="edit-post-form">
+                      <input
+                        type="text"
+                        value={editPostData.subject}
+                        onChange={(e) => setEditPostData({ ...editPostData, subject: e.target.value })}
+                        className="edit-input"
+                        maxLength="255"
+                      />
+                      <textarea
+                        value={editPostData.content}
+                        onChange={(e) => setEditPostData({ ...editPostData, content: e.target.value })}
+                        className="edit-textarea"
+                        maxLength="280"
+                      />
+                      <span className="char-count">{editPostData.content.length}/280</span>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="post-subject">{post.subject}</h3>
+                      <p className="post-content">{post.content}</p>
+                    </>
+                  )}
                   <div className="post-footer">
                     <button
                       className="comments-toggle"
@@ -287,16 +416,58 @@ function Main() {
                                   </span>
                                 </div>
                                 {comment.google_user_id === user.userId && (
-                                  <button
-                                    className="delete-comment-button"
-                                    onClick={() => handleDeleteComment(post.id, comment.id)}
-                                    title="Delete comment"
-                                  >
-                                    Delete
-                                  </button>
+                                  <div className="comment-actions">
+                                    {editingCommentId === comment.id ? (
+                                      <>
+                                        <button
+                                          className="save-comment-button"
+                                          onClick={() => handleUpdateComment(post.id, comment.id)}
+                                          title="Save changes"
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          className="cancel-comment-button"
+                                          onClick={cancelEditComment}
+                                          title="Cancel editing"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button
+                                          className="edit-comment-button"
+                                          onClick={() => startEditComment(comment)}
+                                          title="Edit comment"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          className="delete-comment-button"
+                                          onClick={() => handleDeleteComment(post.id, comment.id)}
+                                          title="Delete comment"
+                                        >
+                                          Delete
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                              <p className="comment-content">{comment.content}</p>
+                              {editingCommentId === comment.id ? (
+                                <div className="edit-comment-form">
+                                  <textarea
+                                    value={editCommentContent}
+                                    onChange={(e) => setEditCommentContent(e.target.value)}
+                                    className="edit-comment-textarea"
+                                    maxLength="280"
+                                  />
+                                  <span className="char-count">{editCommentContent.length}/280</span>
+                                </div>
+                              ) : (
+                                <p className="comment-content">{comment.content}</p>
+                              )}
                             </div>
                           ))
                         ) : (
